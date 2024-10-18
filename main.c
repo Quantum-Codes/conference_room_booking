@@ -1,4 +1,13 @@
-// note: AFTER COMPLETE, DIVIDE INTO MULTIPLE FILES
+// note: AFTER COMPLETE, DIVIDE INTO MULTIPLE FILES - core.c, helper.c, main.c
+
+/*
+Corner cases to take care of:
+    1. If record not existing, then don't perform deletion/editing on it
+    2. If record exists, then don't add again
+    3. Ignore all "marked as deleted" elements for all operations, but dont decrease length of array.
+    4. Check for validity of inputs
+    5. Prevent undefined behaviours
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -26,7 +35,7 @@ char timeslots[1000][MAX_PART_LEN];
 int roomCount = 0, timeSlotCount = 0;
 
 // prototypes
-int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN]);
+int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN]);
 int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
@@ -38,15 +47,16 @@ void displayTimeSlots(void);
 
 int main(void) {
     char rawcommand[MAX_COMMAND_PARTS * MAX_PART_LEN]; // store user input
-    char command[MAX_COMMAND_PARTS][MAX_PART_LEN];     // store tokenised input
-    int len_command;                                   // store length of the tokenised input
+    char command[MAX_COMMAND_PARTS][MAX_PART_LEN];     // store tokenized input
+    int len_command;                                   // store length of the tokenized input
     int status;
 
     while (1) {
         scanf(" %[^\n]s", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
-        len_command = tokeniser(rawcommand, command);
+        len_command = tokenizer(rawcommand, command);
         if (len_command == 0) {
-            return 1; // exit with error
+            printf("\n");
+            continue;
         }
 
         for (int i = 0; i < len_command; i++) {
@@ -62,26 +72,33 @@ int main(void) {
     }
 }
 
-int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN]) {
+int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN]) {
     /*
-        Tokenises the rawstring.
-        rawstring = source
-        tokenised = destination
-        return val = length of tokenised array. output in tokenised parameter passed by reference
+        tokenizes the rawstring.
+        rawstring = source (also modified to lower case in this func)
+        tokenized = destination
+        return val = length of tokenized array. output in tokenized parameter passed by reference
         return 0 if error (invalid input)
     */
     int word = 0, k = 0; // k = wordcounter
     int i = 0;
     for (; rawstring[i] != '\0'; i++) {
+        if (rawstring[i] >= 'A' && rawstring[i] <= 'Z') {
+            rawstring[i] += 'a' - 'A';
+        }
+        else if (!((rawstring[i] >= 'a' && rawstring[i] <= 'z')||(rawstring[i] >= '0' && rawstring[i] <= '9')||(rawstring[i] == ' ')||(rawstring[i] == '\0'))) {
+            printf("Invalid characters used.\n");
+            return 0;
+        }
         if (rawstring[i] == ' ') {
             if (i-1 >= 0 && rawstring[i-1] != ' ') { // ignore consecutive spaces. also using short circuit evaluation to avoid undefined behaviour. if 1st confition is false then never evaluates 2nd in &&
-                tokenised[word][k] = '\0';
+                tokenized[word][k] = '\0';
                 word++;
                 k = 0;
             }
             continue;
         }
-        tokenised[word][k] = rawstring[i];
+        tokenized[word][k] = rawstring[i];
         k++;
         if (k == MAX_PART_LEN) { // == as we catch error when it exceeds, not after.
             printf("error. max len of command part exceeded\n");
@@ -89,13 +106,13 @@ int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN])
         }
     }
     if (rawstring[i-1] != ' ') { // ignore contiguous spaces
-        tokenised[word][k] = '\0';
+        tokenized[word][k] = '\0';
         word++;
     }
     return word;
 }
 
-int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command) {
+int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command) { // the getFields() func
     /*
         Runs the appropriate function based on the input command (command[0])
     */
@@ -157,6 +174,7 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
     /*
         Return 0 if success
+        building name length should be <= MAX_PART_LEN - 4 to make space for the 3 numbers and 1 space
         If error then print an error message then return 1
     */
     printf("addroom params recieved: %s %s\n", buildingName, roomId);
@@ -207,4 +225,21 @@ void displayTimeSlots(void) {
         ignore deleted entries
     */
     return;
+}
+
+int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray) {
+    /*
+        Return index of position of element
+        Return -1 if not found
+    */
+    for (int i = 0; i < lengthOfArray; i++) {
+        if (strcmp(array[i], element) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void deleteFromArray(char array[][MAX_PART_LEN], int index) {
+    array[index][0] = '\0';
 }
