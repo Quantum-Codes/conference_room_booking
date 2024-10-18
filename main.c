@@ -35,8 +35,14 @@ char timeslots[1000][MAX_PART_LEN];
 int roomCount = 0, timeSlotCount = 0;
 
 // prototypes
+
+// helpers
 int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN]);
 int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
+int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray);
+void deleteFromArray(char array[][MAX_PART_LEN], int index);
+
+// core funcs
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
@@ -174,6 +180,7 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
     /*
         Return 0 if success
+        check for existence before adding using searchInArray() func
         building name length should be <= MAX_PART_LEN - 4 to make space for the 3 numbers and 1 space
         If error then print an error message then return 1
     */
@@ -186,7 +193,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
         Return 0 if success
         If error then print an error message then return 1
 
-        to delete, just mark as deleted (set 1st element of string as \0)
+        to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
     printf("removeroom params recieved: %s %s\n", buildingName, roomId);
     return 0;
@@ -195,6 +202,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
 int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
     /*
         Return 0 if success
+        check for existence beforehand using searchInArray() func
         If error then print an error message then return 1
     */
     printf("reserveroom params recieved: %s %s %s\n", buildingName, roomId, time);
@@ -204,8 +212,9 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
 int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
     /*
         Return 0 if success
+        check for existence beforehand using searchInArray() func
         If error then print an error message then return 1
-        to delete, just mark as deleted (set string first char as \0)
+        to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
     printf("cancelroom params recieved: %s %s %s\n", buildingName, roomId, time);
     return 0;
