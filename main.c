@@ -18,12 +18,12 @@ timeslots format: {'0 10', '<index of room in rooms array> <start time(hour)>'}
 we take slots of 1 hour and just store start time. then book multiple slots for a multi hour meeting
 
 */
-char rooms[MAX_PART_LEN][MAX_ROOMS];
-char timeslots[MAX_PART_LEN][1000];
+char rooms[MAX_ROOMS][MAX_PART_LEN];
+char timeslots[1000][MAX_PART_LEN];
 
 // prototypes
-int tokeniser(char rawstring[], char tokenised[MAX_PART_LEN][MAX_COMMAND_PARTS]);
-int processInstructions(char command[MAX_PART_LEN][MAX_COMMAND_PARTS], int len_command);
+int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN]);
+int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
@@ -31,11 +31,11 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
 
 int main(void) {
     char rawcommand[MAX_COMMAND_PARTS * MAX_PART_LEN]; // store user input
-    char command[MAX_PART_LEN][MAX_COMMAND_PARTS];     // store tokenised input
+    char command[MAX_COMMAND_PARTS][MAX_PART_LEN];     // store tokenised input
     int len_command;                                   // store length of the tokenised input
     
     while (1) {
-        scanf(" %[^\n]", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
+        scanf(" %[^\n]s", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
         len_command = tokeniser(rawcommand, command);
         if (len_command == 0) {
             return 1; // exit with error
@@ -50,7 +50,7 @@ int main(void) {
     }
 }
 
-int tokeniser(char rawstring[], char tokenised[MAX_PART_LEN][MAX_COMMAND_PARTS]) {
+int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN]) {
     /*
         Tokenises the rawstring.
         rawstring = source
@@ -66,11 +66,11 @@ int tokeniser(char rawstring[], char tokenised[MAX_PART_LEN][MAX_COMMAND_PARTS])
                 tokenised[word][k] = '\0';
                 word++;
                 k = 0;
-                printf("%s word=%d\n", tokenised[word-1], word-1);
+                //printf("%s word=%d\n", tokenised[word-1], word-1);
             }
             continue;
         }
-        printf("scanned: %i - %c\n", i, rawstring[i]);
+        //printf("scanned: %i - %c\n", i, rawstring[i]);
         tokenised[word][k] = rawstring[i];
         k++;
         if (k == MAX_PART_LEN) { // == as we catch error when it exceeds, not after.
@@ -85,7 +85,7 @@ int tokeniser(char rawstring[], char tokenised[MAX_PART_LEN][MAX_COMMAND_PARTS])
     return word;
 }
 
-int processInstructions(char command[MAX_PART_LEN][MAX_COMMAND_PARTS], int len_command) {
+int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command) {
     /*
         Runs the appropriate function based on the input command (command[0])
     */
