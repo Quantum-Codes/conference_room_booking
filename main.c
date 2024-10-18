@@ -1,3 +1,5 @@
+// note: AFTER COMPLETE, DIVIDE INTO MULTIPLE FILES
+
 #include <stdio.h>
 #include <string.h>
 
