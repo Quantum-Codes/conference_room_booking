@@ -17,9 +17,11 @@ rooms array format: {'AB1 301', 'Abheri 34', '<any name of max MAX_PART_LEN char
 timeslots format: {'0 10', '<index of room in rooms array> <start time(hour)>'} 
 we take slots of 1 hour and just store start time. then book multiple slots for a multi hour meeting
 
+Convention we take: If 1st character of an element is \0, then it is deleted and we ignore it for all purposes
 */
 char rooms[MAX_ROOMS][MAX_PART_LEN];
 char timeslots[1000][MAX_PART_LEN];
+int roomCount = 0, timeSlotCount = 0;
 
 // prototypes
 int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN]);
@@ -27,6 +29,9 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
 int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
+int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
+void displayRooms(void);
+void displayTimeSlots(void);
 
 
 int main(void) {
@@ -47,6 +52,7 @@ int main(void) {
         printf("\n");
 
         processInstructions(command, len_command);
+        printf("\n");
     }
 }
 
@@ -66,11 +72,9 @@ int tokeniser(char rawstring[], char tokenised[MAX_COMMAND_PARTS][MAX_PART_LEN])
                 tokenised[word][k] = '\0';
                 word++;
                 k = 0;
-                //printf("%s word=%d\n", tokenised[word-1], word-1);
             }
             continue;
         }
-        //printf("scanned: %i - %c\n", i, rawstring[i]);
         tokenised[word][k] = rawstring[i];
         k++;
         if (k == MAX_PART_LEN) { // == as we catch error when it exceeds, not after.
@@ -111,6 +115,27 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
         } 
         reserveRoom(command[1], command[2], command[3]);
     }
+    else if (strcmp(command[0], "cancel") == 0) {
+        if (len_command != 4){
+            printf("Expected 3 arguments, got %d\n", len_command-1);
+            return 1;
+        } 
+        cancelRoom(command[1], command[2], command[3]);
+    }
+    else if (strcmp(command[0], "rooms") == 0) {
+        if (len_command != 1){
+            printf("Expected 0 arguments, got %d\n", len_command-1);
+            return 1;
+        } 
+        displayRooms();
+    }
+    else if (strcmp(command[0], "timeslots") == 0) {
+        if (len_command != 1){
+            printf("Expected 0 arguments, got %d\n", len_command-1);
+            return 1;
+        } 
+        displayTimeSlots();
+    }
     else {
         for (int i = 0; i < len_command; i++) {
             printf("(%i %s) ", i, command[i]);
@@ -133,7 +158,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
         Return 0 if success
         If error then print an error message then return 1
 
-        to delete, just mark as deleted (set string first char as \0)
+        to delete, just mark as deleted (set 1st element of string as \0)
     */
     printf("removeroom params recieved: %s %s\n", buildingName, roomId);
     return 0;
@@ -146,4 +171,30 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
     */
     printf("reserveroom params recieved: %s %s %s\n", buildingName, roomId, time);
     return 0;
+}
+
+int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
+    /*
+        Return 0 if success
+        If error then print an error message then return 1
+        to delete, just mark as deleted (set string first char as \0)
+    */
+    printf("cancelroom params recieved: %s %s %s\n", buildingName, roomId, time);
+    return 0;
+}
+
+void displayRooms(void) {
+    /*
+        Just print all rooms and buildings neatly. No need of returning anything
+        ignore deleted entries
+    */
+    return;
+}
+
+void displayTimeSlots(void) {
+    /*
+        Just print all timeslots with rooms neatly. No need of returning anything
+        ignore deleted entries
+    */
+    return;
 }
