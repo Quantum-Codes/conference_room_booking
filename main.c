@@ -38,7 +38,8 @@ int main(void) {
     char rawcommand[MAX_COMMAND_PARTS * MAX_PART_LEN]; // store user input
     char command[MAX_COMMAND_PARTS][MAX_PART_LEN];     // store tokenised input
     int len_command;                                   // store length of the tokenised input
-    
+    int status;
+
     while (1) {
         scanf(" %[^\n]s", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
         len_command = tokeniser(rawcommand, command);
@@ -51,7 +52,10 @@ int main(void) {
         }
         printf("\n");
 
-        processInstructions(command, len_command);
+        status = processInstructions(command, len_command);
+        if (status == 999) {
+            return 0;
+        }
         printf("\n");
     }
 }
@@ -135,6 +139,10 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
             return 1;
         } 
         displayTimeSlots();
+    }
+    else if (strcmp(command[0], "exit") == 0) {
+        printf("Exiting program...\n");
+        return 999;
     }
     else {
         for (int i = 0; i < len_command; i++) {
