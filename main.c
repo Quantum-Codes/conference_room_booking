@@ -43,10 +43,10 @@ int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray)
 void deleteFromArray(char array[][MAX_PART_LEN], int index);
 
 // core funcs
-int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
-int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]);
-int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
-int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]);
+int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
+int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
+int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]);
+int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]);
 void displayRooms(void);
 void displayTimeSlots(void);
 
@@ -177,7 +177,7 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
     }
 }
 
-int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
+int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     /*
         Return 0 if success
         check for existence before adding using searchInArray() func
@@ -185,10 +185,18 @@ int addRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
         If error then print an error message then return 1
     */
     printf("addroom params recieved: %s %s\n", buildingName, roomId);
+
+    for (int i = 0; roomId[i] != '\0'; i++) {
+        if (roomId[i] < '0' || roomId[i] > '9') {
+            printf("Invalid room number\n");
+            return 1;
+        }
+    }
+
     return 0;
 }
 
-int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
+int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     /*
         Return 0 if success
         If error then print an error message then return 1
@@ -199,7 +207,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[3]) {
     return 0;
 }
 
-int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
+int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
     /*
         Return 0 if success
         check for existence beforehand using searchInArray() func
@@ -209,7 +217,7 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
     return 0;
 }
 
-int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[3], char time[2]) {
+int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
     /*
         Return 0 if success
         check for existence beforehand using searchInArray() func
