@@ -40,7 +40,7 @@ int roomCount = 0, timeSlotCount = 0;
 int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN]);
 int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray);
-void deleteFromArray(char array[][MAX_PART_LEN], int index);
+void deleteFromArray(int index);
 
 // core funcs
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
@@ -204,6 +204,14 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
     printf("removeroom params recieved: %s %s\n", buildingName, roomId);
+    int index = searchInArray(buildingName, roomId);
+    if(index == -1){
+        printf("Room not found\n");
+    }
+    else {
+       deleteFromArray(index);
+    }
+
     return 0;
 }
 
@@ -257,6 +265,6 @@ int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray)
     return -1;
 }
 
-void deleteFromArray(char array[][MAX_PART_LEN], int index) {
-    array[index][0] = '\0';
+void deleteFromArray(int index) {
+    rooms[index][0] = '\0';
 }
