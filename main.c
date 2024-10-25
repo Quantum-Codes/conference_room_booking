@@ -47,6 +47,7 @@ void zfill(char dest[], int len);
 int is_valid_number(char number[4]);
 void int_to_str(char dest[], int number);
 int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode[]);
+void deleteStrayTimeSlots(int roomIndex);
 
 // core funcs
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
@@ -64,7 +65,7 @@ int main(void) {
     int len_command;                                   // store length of the tokenized input
     int status;
 
-    printf("\nConference Room Booking (Last Updated: 25/10/2024) [Group 3]\n\
+    printf("\nConference Room Booking (Language: C) [Group 3]\n\
 Type 'help' for a list of commands.\nType 'help <commandname>' for usage of a command.\n\
 Type 'credits' for team info. Type 'exit' to stop.\n\n");
     while (1) {
@@ -273,6 +274,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     }
     else {
        deleteFromArray(rooms, index);
+       deleteStrayTimeSlots(index);
        printf("Successfully deleted room: %s\n", roomEntry);
     }
 
@@ -366,7 +368,7 @@ int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3
         return 1;
     }
 
-    timeslot_funcs(roomEntry, startTime, endTime, "reserve");
+    timeslot_funcs(roomEntry, startTime, endTime, "cancel");
     zfill(startTime, 2); // these zfills are purely for aesthetics
     zfill(endTime, 2); 
 
@@ -379,10 +381,9 @@ void displayRooms(void) {
         Just print all rooms and buildings neatly. No need of returning anything
         ignore deleted entries
     */
-    printf("%d records found\n", roomCount);
     for (int i = 0, k = 1; i < roomCount; i++) {
         if (rooms[i][0] != '\0') {
-            printf("%d. %s\n", k, rooms[i]);
+            printf("%d.\t%s\n", k, rooms[i]);
             k++;
         }
     }
@@ -393,12 +394,11 @@ void displayTimeSlots(void) {
         Just print all timeslots with rooms neatly. No need of returning anything
         ignore deleted entries
     */
-    printf("%d records found\n", timeSlotCount);
     char roomEntry[2][MAX_PART_LEN];
     for (int i = 0, k = 1; i < timeSlotCount; i++) {
         if (timeslots[i][0] != '\0') {
             tokenizer(timeslots[i], roomEntry);
-            printf("%d. %s %s:00\n", k, rooms[atoi(roomEntry[0])], roomEntry[1]);
+            printf("%d.\t%s %s:00\n", k, rooms[atoi(roomEntry[0])], roomEntry[1]);
             k++;
         }
     }
@@ -545,14 +545,26 @@ int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode
             strcpy(timeslots[timeSlotCount++], roomData);
         }
         else if (strcmp(mode, "cancel") == 0) {
-            int index = searchInArray(timeslots, roomData, timeSlotCount);
+            int index = searchInArray(rooms, roomEntry, roomCount);
+            int_to_str(roomData, index);
+            strcat(roomData, " ");
+            strcat(roomData, startTime_str);
+
+            index = searchInArray(timeslots, roomData, timeSlotCount);
             if (index != -1) {
                 deleteFromArray(timeslots, index);
             }
         }
-        else {
-            printf("WTF does %s mean??\n", mode);
-        }
     }
     return 0;
+}
+
+void deleteStrayTimeSlots(int roomIndex) {
+    char timeSlot[2][MAX_PART_LEN]; // supposed to be [24 * MAX_ROOMS + 4](max index from room array + space + 2 digits + \0) but assuming only 46 digit index at max
+    for (int i = 0; i < timeSlotCount; i++) {
+        tokenizer(timeslots[i], timeSlot);
+        if (atoi(timeSlot[0]) == roomIndex) {
+            deleteFromArray(timeslots, i);
+        }
+    }
 }
