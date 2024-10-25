@@ -12,6 +12,7 @@ Corner cases to take care of:
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 
 /* 
 assumptions:
@@ -38,10 +39,10 @@ int roomCount = 0, timeSlotCount = 0;
 // prototypes
 
 // helpers
-int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN]);
+int tokenizer(char rawstring[], char tokenized[][MAX_PART_LEN]);
 int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray);
-void deleteFromArray(int index);
+void deleteFromArray(char array[][MAX_PART_LEN], int index);
 void zfill(char dest[], int len);
 int is_valid_number(char number[4]);
 void int_to_str(char dest[], int number);
@@ -62,6 +63,7 @@ int main(void) {
     int status;
 
     while (1) {
+        printf(">> ");
         scanf(" %[^\n]s", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
         len_command = tokenizer(rawcommand, command);
         if (len_command == 0) {
@@ -69,9 +71,9 @@ int main(void) {
             continue;
         }
 
-        for (int i = 0; i < len_command; i++) {
-            printf("(%i %s) ", i, command[i]);
-        }
+        //for (int i = 0; i < len_command; i++) { // for printing tokenized output
+        //    printf("(%i %s) ", i, command[i]);
+        //}
         printf("\n");
 
         status = processInstructions(command, len_command);
@@ -82,7 +84,7 @@ int main(void) {
     }
 }
 
-int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN]) {
+int tokenizer(char rawstring[], char tokenized[][MAX_PART_LEN]) {
     /*
         tokenizes the rawstring.
         rawstring = source (also modified to lower case in this func)
@@ -189,7 +191,6 @@ int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
         building name length should be <= MAX_PART_LEN - 4 to make space for the 3 numbers and 1 space
         If error then print an error message then return 1
     */
-    printf("addroom params recieved: %s %s\n", buildingName, roomId);
 
     // validate input
     if (!is_valid_number(roomId)) {
@@ -218,7 +219,6 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
 
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
-    printf("removeroom params recieved: %s %s\n", buildingName, roomId);
 
     char roomEntry[MAX_PART_LEN];
     zfill(roomId, 3);
@@ -231,7 +231,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
         printf("Room not found\n");
     }
     else {
-       deleteFromArray(index);
+       deleteFromArray(rooms, index);
        printf("Successfully deleted room: %s\n", roomEntry);
     }
 
@@ -244,7 +244,6 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         check for existence beforehand using searchInArray() func
         If error then print an error message then return 1
     */
-    printf("reserveroom params recieved: %s %s %s\n", buildingName, roomId, time);
 
     if (!is_valid_number(roomId)) {
         printf("Invalid room number.\n");
@@ -279,7 +278,8 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         return 1;
     }
     strcpy(timeslots[timeSlotCount++], timeSlotEntry);
-    printf("Successfully booked room %s at %s:00\n", timeSlotEntry, time);
+    printf("Successfully booked room '%s' at %s:00\n", roomEntry, time);
+    printf("Record added: '%s'\n", timeSlotEntry);
 
     return 0;
 }
@@ -291,8 +291,32 @@ int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         If error then print an error message then return 1
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
-    printf("cancelroom params recieved: %s %s %s\n", buildingName, roomId, time);
+    char roomEntry[MAX_PART_LEN];
+
+    zfill(roomId, 3);
+    zfill(time, 2);
+
+    strcpy(roomEntry, buildingName);
+    strcat(roomEntry, " ");
+    strcat(roomEntry, roomId);
+
+    int index = searchInArray(rooms, roomEntry, roomCount);
+    if(index == -1){
+        printf("Room not found\n");
+    }
     
+    char timeSlotEntry[MAX_PART_LEN];
+    int_to_str(timeSlotEntry, index);
+    strcat(timeSlotEntry, " ");
+    strcat(timeSlotEntry, time);
+
+    index = searchInArray(timeslots, timeSlotEntry, timeSlotCount);
+    if (index == -1) {
+        printf("Timeslot was not booked.\n");
+        return 0; // anyway at the end, the timeslot is available which matches the goal of function. so not error.
+    }
+    deleteFromArray(timeslots, index);
+    printf("Successfully cancelled booking\n");
     return 0;
 }
 
@@ -301,7 +325,7 @@ void displayRooms(void) {
         Just print all rooms and buildings neatly. No need of returning anything
         ignore deleted entries
     */
-   printf("Rooms:\n");
+    printf("%d records found:\n", roomCount);
     for (int i = 0, k = 1; i < roomCount; i++) {
         if (rooms[i][0] != '\0') {
             printf("%d. %s\n", k, rooms[i]);
@@ -315,7 +339,16 @@ void displayTimeSlots(void) {
         Just print all timeslots with rooms neatly. No need of returning anything
         ignore deleted entries
     */
-    return;
+    printf("%d records found:\n", timeSlotCount);
+    char roomEntry[2][MAX_PART_LEN];
+    for (int i = 0, k = 1; i < timeSlotCount; i++) {
+        if (timeslots[i][0] != '\0') {
+            tokenizer(timeslots[i], roomEntry);
+            printf("%d. %s %s:00\n", k, rooms[atoi(roomEntry[0])], roomEntry[1]);
+            k++;
+        }
+    }
+   return;
 }
 
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray) {
@@ -331,8 +364,8 @@ int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray)
     return -1;
 }
 
-void deleteFromArray(int index) {
-    rooms[index][0] = '\0';
+void deleteFromArray(char array[][MAX_PART_LEN], int index) {
+    array[index][0] = '\0'; // passed by reference, so will reflect in global var
 }
 
 void zfill(char dest[], int len) {
