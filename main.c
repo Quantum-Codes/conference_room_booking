@@ -17,7 +17,7 @@ Corner cases to take care of:
 /* 
 assumptions:
    input is like : xxxx xxxxx xxx xxxxxx xxx 
-   here we define MAX_COMMAND_PARTS as number of words in input. here its 6
+   here we define MAX_COMMAND_PARTS as max number of words allowable in input. here its 6
    MAX_PART_LEN is the maximum length of each word
 */
 #define MAX_COMMAND_PARTS 6
@@ -406,8 +406,8 @@ void displayTimeSlots(void) {
 }
 
 void helpCommand(char command[], int listout) {
-    int no_of_commands = 7; // manually updated
-    char commands[][MAX_PART_LEN] = {"add", "remove", "reserve", "cancel", "rooms", "timeslots", "help"};
+    int no_of_commands = 8; // manually updated
+    char commands[][MAX_PART_LEN] = {"add", "remove", "reserve", "cancel", "rooms", "timeslots", "help", "exit"};
     char shortDesc[][100] = {
         "[ADMIN] Adds a room to pool of bookable rooms.",
         "[ADMIN] Deletes a room and all its timeslots booked.",
@@ -415,16 +415,18 @@ void helpCommand(char command[], int listout) {
         "Cancel a previous booking.",
         "List out all rooms.",
         "List out all timeslots already booked.",
-        "Get help on a specific command ('help [command]') or just get a list of commands. (this)"
+        "Get help on a specific command ('help [command]') or just get a list of commands. (this)",
+        "Exit out of program."
     };
     char longDesc[][500] = {
-        "Syntax: 'add <buildingName> <roomNo>'\n[Admin command]\nAdds the given room to be booked by other users.",
-        "Syntax: 'remove <buildingName> <roomNo>'\n[Admin command]\nRemoves the given room from rooms list. All booked timeslots are also removed.",
-        "Syntax: 'reserve <buildingName> <roomNo> <startTime> <endTime>'\nReserves the room for you in the given time.\nNote that your meeting cannot end at 12am(00:00) or continue through 12am",
-        "Syntax: 'cancel <buildingName> <roomNo> <startTime> <endTime>'\nCancels the booking for a room.\nNote that your meeting cannot end at 12am(00:00) or continue through 12am",
-        "Syntax: 'rooms'\nLists out all rooms available.",
-        "Syntax: 'timeslots'\nLists out all the timeslots already booked for all rooms.",
-        "Syntax: 'help [command]'\nGet a list of all commands.\nIf optional param 'command' is supplied then it gives the long description of the command."
+        "Syntax: 'add <buildingName> <roomNo>'\n\n[Admin command]\nAdds the given room to be booked by other users.\nTypically the roomnumber needs to be of 3 digits, but if less is supplied then the program manages it by prefixing zeros to the start.\nConverts all letters to lowercase.\n\nExample Usage: add 'LHC 211', 'Abheri 4'",
+        "Syntax: 'remove <buildingName> <roomNo>'\n\n[Admin command]\nRemoves the given room from rooms list. All booked timeslots are also removed.\nTypically the roomnumber needs to be of 3 digits, but if less is supplied then the program manages it by prefixing zeros to the start.\nConverts all letters to lowercase.\n\nExample Usage: 'remove LHC 211'",
+        "Syntax: 'reserve <buildingName> <roomNo> <startTime> <endTime>'\n\nReserves the room for you in the given time.\nNote that your meeting cannot end at 12am(00:00) or continue through 12am\nTypically the roomnumber needs to be of 3 digits, but if less is supplied then the program manages it by prefixing zeros to the start.\nConverts all letters to lowercase.\n\nExample Usage: 'reserve LHC 211 8 17'",
+        "Syntax: 'cancel <buildingName> <roomNo> <startTime> <endTime>'\n\nCancels the booking for a room.\nNote that your meeting cannot end at 12am(00:00) or continue through 12am\nTypically the roomnumber needs to be of 3 digits, but if less is supplied then the program manages it by prefixing zeros to the start.\nConverts all letters to lowercase.\n\nExample Usage: 'cancel LHC 211 9 12'",
+        "Syntax: 'rooms'\n\nLists out all rooms available.",
+        "Syntax: 'timeslots'\n\nLists out all the timeslots already booked for all rooms.",
+        "Syntax: 'help [command]'\n\nGet a list of all commands.\nIf optional param 'command' is supplied then it gives the long description of the command.\n\nExample Usage: 'help', 'help reserve'",
+        "Syntax: 'exit'\n\nStops the program immediately. Doesnt care if any extra arguments are passed."
     };
     
     if (listout) {
