@@ -11,6 +11,7 @@ Corner cases to take care of:
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 /* 
 assumptions:
@@ -41,6 +42,9 @@ int tokenizer(char rawstring[], char tokenized[MAX_COMMAND_PARTS][MAX_PART_LEN])
 int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray);
 void deleteFromArray(int index);
+void zfill(char dest[], int len);
+int is_valid_number(char number[4]);
+void int_to_str(char dest[], int number);
 
 // core funcs
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
@@ -175,6 +179,7 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
         }
         printf("\n");
     }
+    return 0;
 }
 
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
@@ -187,12 +192,12 @@ int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     printf("addroom params recieved: %s %s\n", buildingName, roomId);
 
     // validate input
-    for (int i = 0; roomId[i] != '\0'; i++) {
-        if (roomId[i] < '0' || roomId[i] > '9') {
-            printf("Invalid room number\n");
-            return 1;
-        }
+    if (!is_valid_number(roomId)) {
+        printf("Invalid room number.\n");
+        return 1;
     }
+
+    zfill(roomId, 3);
 
     char roomEntry[MAX_PART_LEN];
     strcpy(roomEntry, buildingName);
@@ -216,6 +221,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     printf("removeroom params recieved: %s %s\n", buildingName, roomId);
 
     char roomEntry[MAX_PART_LEN];
+    zfill(roomId, 3);
     strcpy(roomEntry, buildingName);
     strcat(roomEntry, " ");
     strcat(roomEntry, roomId);
@@ -239,6 +245,42 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         If error then print an error message then return 1
     */
     printf("reserveroom params recieved: %s %s %s\n", buildingName, roomId, time);
+
+    if (!is_valid_number(roomId)) {
+        printf("Invalid room number.\n");
+        return 1;
+    }
+    if (!is_valid_number(time)) {
+        printf("Invalid time.\n");
+        return 1;
+    }
+
+    zfill(time, 2);
+    zfill(roomId, 3);
+
+    char roomEntry[MAX_PART_LEN];
+    strcpy(roomEntry, buildingName);
+    strcat(roomEntry, " ");
+    strcat(roomEntry, roomId);
+
+    int index = searchInArray(rooms, roomEntry, roomCount);
+    if (index == -1) {
+        printf("Room %s not found.\n", roomEntry);
+        return 1;
+    }
+
+    char timeSlotEntry[MAX_PART_LEN];
+    int_to_str(timeSlotEntry, index);
+    strcat(timeSlotEntry, " ");
+    strcat(timeSlotEntry, time);
+
+    if (searchInArray(timeslots, timeSlotEntry, timeSlotCount) != -1) {
+        printf("Timeslot already booked.\n");
+        return 1;
+    }
+    strcpy(timeslots[timeSlotCount++], timeSlotEntry);
+    printf("Successfully booked room %s at %s:00\n", timeSlotEntry, time);
+
     return 0;
 }
 
@@ -250,6 +292,7 @@ int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
     printf("cancelroom params recieved: %s %s %s\n", buildingName, roomId, time);
+    
     return 0;
 }
 
@@ -290,4 +333,58 @@ int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray)
 
 void deleteFromArray(int index) {
     rooms[index][0] = '\0';
+}
+
+void zfill(char dest[], int len) {
+    /*
+    ZeroFill like in python.
+    Pads zeroes in a number to reach a target length.
+    */
+    if (strlen(dest) == len) {
+        return;
+    }
+
+    char src[len];
+    strcpy(src, dest);
+
+    for (int i = 0; i < len; i++) {
+        if (len - strlen(src) > i) {
+            dest[i] = '0';
+        }
+        else {
+            dest[i] = src[i - (len - strlen(src))];
+        }
+    }
+    dest[len] = '\0';
+}
+
+int is_valid_number(char number[4]) {
+    for (int i = 0; number[i] != '\0'; i++) {
+        if (number[i] < '0' || number[i] > '9') {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void int_to_str(char dest[], int number) {
+    int len;
+    if (number != 0) {
+        double length = log10((double) number) + 1; // truncated for floor of log
+        len = (int) length;
+    }
+    else {
+        strcpy(dest, "0");
+        return;
+    }
+    for (int i = 0; i < len; i++) {
+        if (number != 0) {
+            dest[len - i - 1] = (number % 10) + '0';
+        }
+        else {
+            dest[len - i - 1] = 'a';
+        }
+        number /= 10;
+    }
+    dest[len] = '\0';
 }
