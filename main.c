@@ -186,12 +186,22 @@ int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     */
     printf("addroom params recieved: %s %s\n", buildingName, roomId);
 
+    // validate input
     for (int i = 0; roomId[i] != '\0'; i++) {
         if (roomId[i] < '0' || roomId[i] > '9') {
             printf("Invalid room number\n");
             return 1;
         }
     }
+
+    char roomEntry[MAX_PART_LEN];
+    strcpy(roomEntry, buildingName);
+
+    strcat(roomEntry, " ");
+    strcat(roomEntry, roomId);
+    strcpy(rooms[roomCount++], roomEntry);
+
+    printf("Successfully added %s as a room.\n", roomEntry);
 
     return 0;
 }
@@ -204,12 +214,19 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
     printf("removeroom params recieved: %s %s\n", buildingName, roomId);
-    int index = searchInArray(buildingName, roomId);
+
+    char roomEntry[MAX_PART_LEN];
+    strcpy(roomEntry, buildingName);
+    strcat(roomEntry, " ");
+    strcat(roomEntry, roomId);
+
+    int index = searchInArray(rooms, roomEntry, roomCount);
     if(index == -1){
         printf("Room not found\n");
     }
     else {
        deleteFromArray(index);
+       printf("Successfully deleted room: %s\n", roomEntry);
     }
 
     return 0;
@@ -241,7 +258,13 @@ void displayRooms(void) {
         Just print all rooms and buildings neatly. No need of returning anything
         ignore deleted entries
     */
-    return;
+   printf("Rooms:\n");
+    for (int i = 0, k = 1; i < roomCount; i++) {
+        if (rooms[i][0] != '\0') {
+            printf("%d. %s\n", k, rooms[i]);
+            k++;
+        }
+    }
 }
 
 void displayTimeSlots(void) {
