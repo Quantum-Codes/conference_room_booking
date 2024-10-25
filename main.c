@@ -316,7 +316,7 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[
         return 1;
     }
 
-    if(!timeslot_funcs(roomEntry, startTime, endTime, "check")) {
+    if(timeslot_funcs(roomEntry, startTime, endTime, "check")) {
         return 1;
     }
 
@@ -512,6 +512,8 @@ int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode
     char startTime_str[3];
     char endTime_str[3];
 
+    //printf("Recieved params: %s, %d, %d, %s\n", roomEntry, startTime_int, endTime_int, mode);
+
     for (int i = startTime_int; i < endTime_int; i++) {
         // new start time
         int_to_str(startTime_str, i);
@@ -523,23 +525,33 @@ int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode
         //create entry to check
         strcat(roomData, " ");
         strcat(roomData, startTime_str);
+       // printf("curr: %s\n", roomData);
 
         if (strcmp(mode, "check") == 0) {
+            //printf("checking\n");
             if (searchInArray(timeslots, roomData, timeSlotCount) != -1) {
+                //printf("Rec already found\n");
                 int_to_str(endTime_str, i+1);
                 zfill(endTime_str, 2);
-                printf("Slot from %s:00 to %s:00 is already booked. Please try to reschedule or pick another room.\n", startTime_str);
+                printf("Slot from %s:00 to %s:00 is already booked. Please try to reschedule or pick another room.\n", startTime_str, endTime_str);
                 return 1;
             }
         }
         else if (strcmp(mode, "reserve") == 0) {
-            strcmp(timeslots[timeSlotCount++], roomData);
+            int index = searchInArray(rooms, roomEntry, roomCount);
+            int_to_str(roomData, index);
+            strcat(roomData, " ");
+            strcat(roomData, startTime_str);
+            strcpy(timeslots[timeSlotCount++], roomData);
         }
         else if (strcmp(mode, "cancel") == 0) {
             int index = searchInArray(timeslots, roomData, timeSlotCount);
             if (index != -1) {
                 deleteFromArray(timeslots, index);
             }
+        }
+        else {
+            printf("WTF does %s mean??\n", mode);
         }
     }
     return 0;
