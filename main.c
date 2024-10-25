@@ -46,12 +46,13 @@ void deleteFromArray(char array[][MAX_PART_LEN], int index);
 void zfill(char dest[], int len);
 int is_valid_number(char number[4]);
 void int_to_str(char dest[], int number);
+int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode[]);
 
 // core funcs
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
-int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]);
-int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]);
+int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3], char endTime[3]);
+int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3], char endTime[3]);
 void displayRooms(void);
 void displayTimeSlots(void);
 void helpCommand(char command[], int listout);
@@ -63,6 +64,9 @@ int main(void) {
     int len_command;                                   // store length of the tokenized input
     int status;
 
+    printf("\nConference Room Booking (Last Updated: 25/10/2024) [Group 3]\n\
+Type 'help' for a list of commands.\nType 'help <commandname>' for usage of a command.\n\
+Type 'credits' for team info. Type 'exit' to stop.\n\n");
     while (1) {
         printf(">> ");
         scanf(" %[^\n]s", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
@@ -75,7 +79,7 @@ int main(void) {
         //for (int i = 0; i < len_command; i++) { // for printing tokenized output
         //    printf("(%i %s) ", i, command[i]);
         //}
-        printf("\n");
+        //printf("\n");
 
         status = processInstructions(command, len_command);
         if (status == 999) {
@@ -145,18 +149,18 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
         removeRoom(command[1], command[2]);
     }
     else if (strcmp(command[0], "reserve") == 0) {
-        if (len_command != 4){
-            printf("Expected 3 arguments, got %d\n", len_command-1);
+        if (len_command != 5){
+            printf("Expected 4 arguments, got %d\n", len_command-1);
             return 1;
         } 
-        reserveRoom(command[1], command[2], command[3]);
+        reserveRoom(command[1], command[2], command[3], command[4]);
     }
     else if (strcmp(command[0], "cancel") == 0) {
-        if (len_command != 4){
-            printf("Expected 3 arguments, got %d\n", len_command-1);
+        if (len_command != 5){
+            printf("Expected 4 arguments, got %d\n", len_command-1);
             return 1;
         } 
-        cancelRoom(command[1], command[2], command[3]);
+        cancelRoom(command[1], command[2], command[3], command[4]);
     }
     else if (strcmp(command[0], "rooms") == 0) {
         if (len_command != 1){
@@ -173,7 +177,7 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
         displayTimeSlots();
     }
     else if (strcmp(command[0], "help") == 0) {
-        if (len_command != 1 || len_command != 2){
+        if (len_command != 1 && len_command != 2){
             printf("Expected 0 or 1 arguments, got %d\n", len_command-1);
             return 1;
         }
@@ -185,15 +189,25 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
             helpCommand(command[0], 0);
         }
     }
+    else if (strcmp(command[0], "credits") == 0) {
+        printf("\
+Team 3:\n\
+1. CE24B003 Ankit Sinha (lead)\n\
+2. EE24B058 Vennam Blessy Manaswitha\n\
+3. CS24B004 Bachu Vishnu Vardhan\n\
+4. EE24B003 Ardhanala Deepika\n\
+5. ME24B003 Anguluri Venkata Rathnam\n");
+    }
     else if (strcmp(command[0], "exit") == 0) {
         printf("Exiting program...\n");
         return 999;
     }
     else {
-        for (int i = 0; i < len_command; i++) {
-            printf("(%i %s) ", i, command[i]);
-        }
-        printf("\n");
+        //for (int i = 0; i < len_command; i++) { // print tokenized output for debugging
+        //    printf("(%i %s) ", i, command[i]);
+        //}
+        //printf("\n");
+        printf("No such command... Type \"help\" to see all commands\n");
     }
     return 0;
 }
@@ -219,8 +233,13 @@ int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
 
     strcat(roomEntry, " ");
     strcat(roomEntry, roomId);
-    strcpy(rooms[roomCount++], roomEntry);
 
+    if (searchInArray(rooms, roomEntry, roomCount) != -1) {
+        printf("Room already exists.\n");
+        return 1;
+    }
+    
+    strcpy(rooms[roomCount++], roomEntry);
     printf("Successfully added %s as a room.\n", roomEntry);
 
     return 0;
@@ -250,6 +269,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     int index = searchInArray(rooms, roomEntry, roomCount);
     if(index == -1){
         printf("Room not found\n");
+        return 1;
     }
     else {
        deleteFromArray(rooms, index);
@@ -259,7 +279,7 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
     return 0;
 }
 
-int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
+int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3], char endTime[3]) {
     /*
         Return 0 if success
         check for existence beforehand using searchInArray() func
@@ -270,15 +290,22 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         printf("Invalid room number.\n");
         return 1;
     }
-    if (!is_valid_number(time)) {
-        printf("Invalid time.\n");
+    if (!is_valid_number(startTime)) {
+        printf("Invalid start time.\n");
+        return 1;
+    }
+    if (!is_valid_number(endTime)) {
+        printf("Invalid end time.\n");
+        return 1;
+    }
+    if (atoi(startTime) >= atoi(endTime)) {
+        printf("Booking only possible within today and for more than 0 hours.\n");
         return 1;
     }
 
-    zfill(time, 2);
+    char roomEntry[MAX_PART_LEN];
     zfill(roomId, 3);
 
-    char roomEntry[MAX_PART_LEN];
     strcpy(roomEntry, buildingName);
     strcat(roomEntry, " ");
     strcat(roomEntry, roomId);
@@ -289,23 +316,19 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         return 1;
     }
 
-    char timeSlotEntry[MAX_PART_LEN];
-    int_to_str(timeSlotEntry, index);
-    strcat(timeSlotEntry, " ");
-    strcat(timeSlotEntry, time);
-
-    if (searchInArray(timeslots, timeSlotEntry, timeSlotCount) != -1) {
-        printf("Timeslot already booked.\n");
+    if(!timeslot_funcs(roomEntry, startTime, endTime, "check")) {
         return 1;
     }
-    strcpy(timeslots[timeSlotCount++], timeSlotEntry);
-    printf("Successfully booked room '%s' at %s:00\n", roomEntry, time);
-    printf("Record added: '%s'\n", timeSlotEntry);
 
+    timeslot_funcs(roomEntry, startTime, endTime, "reserve");
+    zfill(startTime, 2); // these zfills are purely for aesthetics
+    zfill(endTime, 2); 
+
+    printf("Successfully booked room '%s' for time %s:00 to %s:00\n", roomEntry, startTime, endTime);
     return 0;
 }
 
-int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
+int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3], char endTime[3]) {
     /*
         Return 0 if success
         check for existence beforehand using searchInArray() func
@@ -317,37 +340,37 @@ int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         printf("Invalid room number.\n");
         return 1;
     }
-    if (!is_valid_number(time)) {
-        printf("Invalid time.\n");
+    if (!is_valid_number(startTime)) {
+        printf("Invalid start time.\n");
+        return 1;
+    }
+    if (!is_valid_number(endTime)) {
+        printf("Invalid end time.\n");
+        return 1;
+    }
+    if (atoi(startTime) >= atoi(endTime)) {
+        printf("Booking only possible within today and for more than 0 hours.\n");
         return 1;
     }
 
     char roomEntry[MAX_PART_LEN];
-
     zfill(roomId, 3);
-    zfill(time, 2);
 
     strcpy(roomEntry, buildingName);
     strcat(roomEntry, " ");
     strcat(roomEntry, roomId);
 
     int index = searchInArray(rooms, roomEntry, roomCount);
-    if(index == -1){
-        printf("Room not found\n");
-    }
-    
-    char timeSlotEntry[MAX_PART_LEN];
-    int_to_str(timeSlotEntry, index);
-    strcat(timeSlotEntry, " ");
-    strcat(timeSlotEntry, time);
-
-    index = searchInArray(timeslots, timeSlotEntry, timeSlotCount);
     if (index == -1) {
-        printf("Timeslot was not booked.\n");
-        return 0; // anyway at the end, the timeslot is available which matches the goal of function. so not error.
+        printf("Room %s not found.\n", roomEntry);
+        return 1;
     }
-    deleteFromArray(timeslots, index);
-    printf("Successfully cancelled booking\n");
+
+    timeslot_funcs(roomEntry, startTime, endTime, "reserve");
+    zfill(startTime, 2); // these zfills are purely for aesthetics
+    zfill(endTime, 2); 
+
+    printf("Successfully cancelled room booking on '%s' for time %s:00 to %s:00\n", roomEntry, startTime, endTime);
     return 0;
 }
 
@@ -383,7 +406,15 @@ void displayTimeSlots(void) {
 }
 
 void helpCommand(char command[], int listout) {
-    printf("Help command\n");
+    if (listout) {
+        printf("List of commands:\n");
+        char commands[][MAX_PART_LEN] = {"add", "remove", "reserve", "cancel", "rooms", "timeslots", "help"};
+        char shortDesc[][500] = {
+            "'add <buildingName> <roomNo>'\n[Admin command]\nAdds the given room to be booked by other users.",
+            "'add <buildingName> <roomNo>'\n[Admin command]\nRemoves the given room from rooms list. Nobody can book this now.",
+            "'reserve <buildingName> <roomNo>'\n[Admin command]\nRemoves the given room from rooms list. Nobody can book this now."
+        };
+    }
 } 
 
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray) {
@@ -427,9 +458,17 @@ void zfill(char dest[], int len) {
 }
 
 int is_valid_number(char number[4]) {
-    if (number[3] != '\0') {
-        return 0;
+    int found_termination = 0;
+    for (int i = 0; i < 4; i++) {
+        if (number[i] == '\0') {
+            found_termination = 1;
+            break;
+        }
     }
+    if (!found_termination) { // which means number overflowed 
+        return 1;
+    }
+
     for (int i = 0; number[i] != '\0'; i++) {
         if (number[i] < '0' || number[i] > '9') {
             return 0;
@@ -458,4 +497,50 @@ void int_to_str(char dest[], int number) {
         number /= 10;
     }
     dest[len] = '\0';
+}
+
+int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode[]) {
+    /*
+    Multipurpose func, a merger of multiple similar funcs
+    Mode: Check if any booked ("check"), Add records ("reserve"), Remove records ("cancel")
+    return val 1 = error, 0 = success/valid
+    Note that each mode assumes that other necessary modes have already been run.
+    */
+    int startTime_int = atoi(startTime);
+    int endTime_int = atoi(endTime);
+    char roomData[MAX_PART_LEN];
+    char startTime_str[3];
+    char endTime_str[3];
+
+    for (int i = startTime_int; i < endTime_int; i++) {
+        // new start time
+        int_to_str(startTime_str, i);
+        zfill(startTime_str, 2);
+
+        // reset roomData
+        strcpy(roomData, roomEntry);
+
+        //create entry to check
+        strcat(roomData, " ");
+        strcat(roomData, startTime_str);
+
+        if (strcmp(mode, "check") == 0) {
+            if (searchInArray(timeslots, roomData, timeSlotCount) != -1) {
+                int_to_str(endTime_str, i+1);
+                zfill(endTime_str, 2);
+                printf("Slot from %s:00 to %s:00 is already booked. Please try to reschedule or pick another room.\n", startTime_str);
+                return 1;
+            }
+        }
+        else if (strcmp(mode, "reserve") == 0) {
+            strcmp(timeslots[timeSlotCount++], roomData);
+        }
+        else if (strcmp(mode, "cancel") == 0) {
+            int index = searchInArray(timeslots, roomData, timeSlotCount);
+            if (index != -1) {
+                deleteFromArray(timeslots, index);
+            }
+        }
+    }
+    return 0;
 }
