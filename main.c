@@ -187,7 +187,7 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
             helpCommand(a, 1);
         }
         else {
-            helpCommand(command[0], 0);
+            helpCommand(command[1], 0);
         }
     }
     else if (strcmp(command[0], "credits") == 0) {
@@ -406,14 +406,46 @@ void displayTimeSlots(void) {
 }
 
 void helpCommand(char command[], int listout) {
+    int no_of_commands = 7; // manually updated
+    char commands[][MAX_PART_LEN] = {"add", "remove", "reserve", "cancel", "rooms", "timeslots", "help"};
+    char shortDesc[][100] = {
+        "[ADMIN] Adds a room to pool of bookable rooms.",
+        "[ADMIN] Deletes a room and all its timeslots booked.",
+        "Reserve a room for the given time.",
+        "Cancel a previous booking.",
+        "List out all rooms.",
+        "List out all timeslots already booked.",
+        "Get help on a specific command ('help [command]') or just get a list of commands. (this)"
+    };
+    char longDesc[][500] = {
+        "Syntax: 'add <buildingName> <roomNo>'\n[Admin command]\nAdds the given room to be booked by other users.",
+        "Syntax: 'remove <buildingName> <roomNo>'\n[Admin command]\nRemoves the given room from rooms list. All booked timeslots are also removed.",
+        "Syntax: 'reserve <buildingName> <roomNo> <startTime> <endTime>'\nReserves the room for you in the given time.\nNote that your meeting cannot end at 12am(00:00) or continue through 12am",
+        "Syntax: 'cancel <buildingName> <roomNo> <startTime> <endTime>'\nCancels the booking for a room.\nNote that your meeting cannot end at 12am(00:00) or continue through 12am",
+        "Syntax: 'rooms'\nLists out all rooms available.",
+        "Syntax: 'timeslots'\nLists out all the timeslots already booked for all rooms.",
+        "Syntax: 'help [command]'\nGet a list of all commands.\nIf optional param 'command' is supplied then it gives the long description of the command."
+    };
+    
     if (listout) {
         printf("List of commands:\n");
-        char commands[][MAX_PART_LEN] = {"add", "remove", "reserve", "cancel", "rooms", "timeslots", "help"};
-        char shortDesc[][500] = {
-            "'add <buildingName> <roomNo>'\n[Admin command]\nAdds the given room to be booked by other users.",
-            "'add <buildingName> <roomNo>'\n[Admin command]\nRemoves the given room from rooms list. Nobody can book this now.",
-            "'reserve <buildingName> <roomNo>'\n[Admin command]\nRemoves the given room from rooms list. Nobody can book this now."
-        };
+        for (int i = 0; i < no_of_commands; i++) {
+            printf("%d. %s - %s\n", i+1, commands[i], shortDesc[i]);
+        }
+        return;
+    }
+    else {
+        int found = 0;
+        for (int i = 0; i < no_of_commands; i++) {
+            if (strcmp(commands[i], command) == 0) {
+                found = 1;
+                printf("Man Page of %s:\n\n%s\n", commands[i], longDesc[i]);
+            }
+        }
+        if (!found) {
+            printf("No such command. See all commands by typing 'help'.\n");
+            return;
+        }
     }
 } 
 
