@@ -54,6 +54,7 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]);
 int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]);
 void displayRooms(void);
 void displayTimeSlots(void);
+void helpCommand(char command[], int listout);
 
 
 int main(void) {
@@ -171,6 +172,19 @@ int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_c
         } 
         displayTimeSlots();
     }
+    else if (strcmp(command[0], "help") == 0) {
+        if (len_command != 1 || len_command != 2){
+            printf("Expected 0 or 1 arguments, got %d\n", len_command-1);
+            return 1;
+        }
+        if (len_command == 1) {
+            char a[] = "";
+            helpCommand(a, 1);
+        }
+        else {
+            helpCommand(command[0], 0);
+        }
+    }
     else if (strcmp(command[0], "exit") == 0) {
         printf("Exiting program...\n");
         return 999;
@@ -220,10 +234,17 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
 
+    // validate input
+    if (!is_valid_number(roomId)) {
+        printf("Invalid room number.\n");
+        return 1;
+    }
+
     char roomEntry[MAX_PART_LEN];
-    zfill(roomId, 3);
     strcpy(roomEntry, buildingName);
     strcat(roomEntry, " ");
+
+    zfill(roomId, 3);
     strcat(roomEntry, roomId);
 
     int index = searchInArray(rooms, roomEntry, roomCount);
@@ -291,6 +312,16 @@ int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char time[3]) {
         If error then print an error message then return 1
         to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
     */
+
+    if (!is_valid_number(roomId)) {
+        printf("Invalid room number.\n");
+        return 1;
+    }
+    if (!is_valid_number(time)) {
+        printf("Invalid time.\n");
+        return 1;
+    }
+
     char roomEntry[MAX_PART_LEN];
 
     zfill(roomId, 3);
@@ -325,7 +356,7 @@ void displayRooms(void) {
         Just print all rooms and buildings neatly. No need of returning anything
         ignore deleted entries
     */
-    printf("%d records found:\n", roomCount);
+    printf("%d records found\n", roomCount);
     for (int i = 0, k = 1; i < roomCount; i++) {
         if (rooms[i][0] != '\0') {
             printf("%d. %s\n", k, rooms[i]);
@@ -339,7 +370,7 @@ void displayTimeSlots(void) {
         Just print all timeslots with rooms neatly. No need of returning anything
         ignore deleted entries
     */
-    printf("%d records found:\n", timeSlotCount);
+    printf("%d records found\n", timeSlotCount);
     char roomEntry[2][MAX_PART_LEN];
     for (int i = 0, k = 1; i < timeSlotCount; i++) {
         if (timeslots[i][0] != '\0') {
@@ -350,6 +381,10 @@ void displayTimeSlots(void) {
     }
    return;
 }
+
+void helpCommand(char command[], int listout) {
+    printf("Help command\n");
+} 
 
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray) {
     /*
@@ -392,6 +427,9 @@ void zfill(char dest[], int len) {
 }
 
 int is_valid_number(char number[4]) {
+    if (number[3] != '\0') {
+        return 0;
+    }
     for (int i = 0; number[i] != '\0'; i++) {
         if (number[i] < '0' || number[i] > '9') {
             return 0;
