@@ -1,10 +1,9 @@
 /*
-Corner cases to take care of:
+Corner cases taken care of:
     1. If record not existing, then don't perform deletion/editing on it
     2. If record exists, then don't add again
     3. Ignore all "marked as deleted" elements for all operations, but dont decrease length of array.
-    4. Check for validity of inputs
-    5. Prevent undefined behaviours
+    4. Check for validity of inputs, lowercase all for consistency and more correct searches
 */
 
 #include "globalVars.h"

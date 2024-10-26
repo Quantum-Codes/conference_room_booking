@@ -1,3 +1,4 @@
+# ref: https://makefiletutorial.com/
 main: roomfuncs.o helper.o mainfile.o
 	gcc roomfuncs.o helper.o mainfile.o -o main -lm
 

@@ -2,10 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+// assumptions
 #define MAX_COMMAND_PARTS 6
 #define MAX_PART_LEN 50
 #define MAX_ROOMS 50
 
+// global vars accessible to whole project
 extern char rooms[MAX_ROOMS][MAX_PART_LEN];
 extern char timeslots[1000][MAX_PART_LEN];
 extern int roomCount;
@@ -13,7 +15,7 @@ extern int timeSlotCount;
 
 // prototypes
 
-// helpers
+// helpers in helperfuncs.c
 int tokenizer(char rawstring[], char tokenized[][MAX_PART_LEN]);
 int processInstructions(char command[MAX_COMMAND_PARTS][MAX_PART_LEN], int len_command);
 int searchInArray(char array[][MAX_PART_LEN], char element[], int lengthOfArray);
@@ -24,7 +26,7 @@ void int_to_str(char dest[], int number);
 int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode[]);
 void deleteStrayTimeSlots(int roomIndex);
 
-// core funcs
+// core funcs in roomfuncs.c
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]);
 int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3], char endTime[3]);
