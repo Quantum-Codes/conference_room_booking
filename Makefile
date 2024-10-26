@@ -1,5 +1,5 @@
 main: roomfuncs.o helper.o mainfile.o
-	gcc roomfuncs.o helper.o mainfile.o -o main.o -lm
+	gcc roomfuncs.o helper.o mainfile.o -o main -lm
 
 roomfuncs.o: roomfuncs.c globalVars.h
 	gcc -c roomfuncs.c -o roomfuncs.o

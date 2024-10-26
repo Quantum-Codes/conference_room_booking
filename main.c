@@ -1,5 +1,3 @@
-// note: AFTER COMPLETE, DIVIDE INTO MULTIPLE FILES - core.c, helper.c, main.c
-
 /*
 Corner cases to take care of:
     1. If record not existing, then don't perform deletion/editing on it
@@ -16,17 +14,15 @@ assumptions:
    input is like : xxxx xxxxx xxx xxxxxx xxx 
    here we define MAX_COMMAND_PARTS as max number of words allowable in input. here its 6
    MAX_PART_LEN is the maximum length of each word
-*/
 
-
-// global vars in "globalVars.h"
-/*
 rooms array format: {'AB1 301', 'Abheri 34', '<any name of max MAX_PART_LEN chars> <any number with max 3 digits'}
 timeslots format: {'0 10', '<index of room in rooms array> <start time(hour)>'} 
 we take slots of 1 hour and just store start time. then book multiple slots for a multi hour meeting
 
 Convention we take: If 1st character of an element is \0, then it is deleted and we ignore it for all purposes
 */
+
+// these are extern global vars in "globalVars.h"
 char rooms[MAX_ROOMS][MAX_PART_LEN];
 char timeslots[1000][MAX_PART_LEN];
 int roomCount = 0, timeSlotCount = 0;
