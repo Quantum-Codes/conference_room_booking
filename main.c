@@ -65,9 +65,13 @@ int main(void) {
     int len_command;                                   // store length of the tokenized input
     int status;
 
-    printf("\nConference Room Booking (Language: C) [Group 3]\n\
-Type 'help' for a list of commands.\nType 'help <commandname>' for usage of a command.\n\
-Type 'credits' for team info. Type 'exit' to stop.\n\n");
+    printf("\n\
+**************************************************\n\
+Conference Room Booking (Language: C) [Group 3]\n\
+Type 'help' for a list of commands.\n\
+Type 'help <commandname>' for usage of a command.\n\
+Type 'credits' for team info. Type 'exit' to stop.\n\
+**************************************************\n\n");
     while (1) {
         printf(">> ");
         scanf(" %[^\n]s", rawcommand); // ignore buffer newlines by space. else the previuos scanf run left a \n in buffer
@@ -214,13 +218,6 @@ Team 3:\n\
 }
 
 int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
-    /*
-        Return 0 if success
-        check for existence before adding using searchInArray() func
-        building name length should be <= MAX_PART_LEN - 4 to make space for the 3 numbers and 1 space
-        If error then print an error message then return 1
-    */
-
     // validate input
     if (!is_valid_number(roomId)) {
         printf("Invalid room number.\n");
@@ -247,13 +244,6 @@ int addRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
 }
 
 int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
-    /*
-        Return 0 if success
-        If error then print an error message then return 1
-
-        to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
-    */
-
     // validate input
     if (!is_valid_number(roomId)) {
         printf("Invalid room number.\n");
@@ -282,12 +272,6 @@ int removeRoom(char buildingName[MAX_PART_LEN], char roomId[4]) {
 }
 
 int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3], char endTime[3]) {
-    /*
-        Return 0 if success
-        check for existence beforehand using searchInArray() func
-        If error then print an error message then return 1
-    */
-
     if (!is_valid_number(roomId)) {
         printf("Invalid room number.\n");
         return 1;
@@ -331,13 +315,7 @@ int reserveRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[
 }
 
 int cancelRoom(char buildingName[MAX_PART_LEN], char roomId[4], char startTime[3], char endTime[3]) {
-    /*
-        Return 0 if success
-        check for existence beforehand using searchInArray() func
-        If error then print an error message then return 1
-        to delete, just use the deleteFromArray() function by finding index of item using searchInArray() func
-    */
-
+    //validate input
     if (!is_valid_number(roomId)) {
         printf("Invalid room number.\n");
         return 1;
@@ -381,12 +359,17 @@ void displayRooms(void) {
         Just print all rooms and buildings neatly. No need of returning anything
         ignore deleted entries
     */
-    for (int i = 0, k = 1; i < roomCount; i++) {
+   int k = 1;
+    for (int i = 0; i < roomCount; i++) {
         if (rooms[i][0] != '\0') {
             printf("%d.\t%s\n", k, rooms[i]);
             k++;
         }
     }
+    if (k == 1) {
+        printf("No records found.\n");
+    }
+    return;
 }
 
 void displayTimeSlots(void) {
@@ -394,13 +377,17 @@ void displayTimeSlots(void) {
         Just print all timeslots with rooms neatly. No need of returning anything
         ignore deleted entries
     */
+   int k = 1;
     char roomEntry[2][MAX_PART_LEN];
-    for (int i = 0, k = 1; i < timeSlotCount; i++) {
+    for (int i = 0; i < timeSlotCount; i++) {
         if (timeslots[i][0] != '\0') {
             tokenizer(timeslots[i], roomEntry);
             printf("%d.\t%s %s:00\n", k, rooms[atoi(roomEntry[0])], roomEntry[1]);
             k++;
         }
+    }
+    if (k == 1) {
+        printf("No records found.\n");
     }
    return;
 }
@@ -546,8 +533,6 @@ int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode
     char startTime_str[3];
     char endTime_str[3];
 
-    //printf("Recieved params: %s, %d, %d, %s\n", roomEntry, startTime_int, endTime_int, mode);
-
     for (int i = startTime_int; i < endTime_int; i++) {
         // new start time
         int_to_str(startTime_str, i);
@@ -559,12 +544,9 @@ int timeslot_funcs(char roomEntry[], char startTime[], char endTime[], char mode
         //create entry to check
         strcat(roomData, " ");
         strcat(roomData, startTime_str);
-       // printf("curr: %s\n", roomData);
 
         if (strcmp(mode, "check") == 0) {
-            //printf("checking\n");
             if (searchInArray(timeslots, roomData, timeSlotCount) != -1) {
-                //printf("Rec already found\n");
                 int_to_str(endTime_str, i+1);
                 zfill(endTime_str, 2);
                 printf("Slot from %s:00 to %s:00 is already booked. Please try to reschedule or pick another room.\n", startTime_str, endTime_str);
