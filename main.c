@@ -63,7 +63,7 @@ int main(void) {
     char rawcommand[MAX_COMMAND_PARTS * MAX_PART_LEN]; // store user input
     char command[MAX_COMMAND_PARTS][MAX_PART_LEN];     // store tokenized input
     int len_command;                                   // store length of the tokenized input
-    int status;
+    int status;                                        // To exit
 
     printf("\n\
 **************************************************\n\
@@ -87,7 +87,7 @@ Type 'credits' for team info. Type 'exit' to stop.\n\
         //printf("\n");
 
         status = processInstructions(command, len_command);
-        if (status == 999) {
+        if (status == 999) { // exit
             return 0;
         }
         printf("\n");
