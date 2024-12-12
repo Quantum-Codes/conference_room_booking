@@ -14,7 +14,7 @@ assumptions:
    here we define MAX_COMMAND_PARTS as max number of words allowable in input. here its 6
    MAX_PART_LEN is the maximum length of each word
 
-rooms array format: {'AB1 301', 'Abheri 34', '<any name of max MAX_PART_LEN chars> <any number with max 3 digits'}
+rooms array format: {'AB1 301', 'Abheri 034', '<any name of max MAX_PART_LEN chars> <any number with max 3 digits'}
 timeslots format: {'0 10', '<index of room in rooms array> <start time(hour)>'} 
 we take slots of 1 hour and just store start time. then book multiple slots for a multi hour meeting
 

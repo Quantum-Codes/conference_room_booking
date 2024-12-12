@@ -173,7 +173,7 @@ int is_valid_number(char number[4]) {
         }
     }
     if (!found_termination) { // which means number overflowed 
-        return 1;
+        return 0;
     }
 
     for (int i = 0; number[i] != '\0'; i++) {
